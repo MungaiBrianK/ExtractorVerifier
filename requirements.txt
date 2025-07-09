@@ -4,5 +4,6 @@ werkzeug==2.3.7
 azure-ai-formrecognizer==3.3.0
 gunicorn==21.2.0
 Flask-Login==0.6.2
+Pillow==10.3.0      # Re-added Pillow
 setuptools==69.5.1 # Pinned for Python 3.13 compatibility
 wheel==0.43.0      # Pinned for Python 3.13 compatibility
