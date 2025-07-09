@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID Card Extractor & Verifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Trebuchet MS', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #fff;
+            background-color: #4f46e5;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #4338ca;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .flash-message.error {
+            background-color: #fef2f2;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+        .flash-message.info {
+            background-color: #eff6ff;
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
+        }
+        .flash-message.success {
+            background-color: #ecfdf5;
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-gradient-to-r from-blue-600 to-purple-700 p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-white text-2xl font-bold">VeriFAB</a>
+            <div>
+                {% if current_user.is_authenticated %}
+                    <span class="text-white mr-4">Welcome, {{ current_user.username }}!</span>
+                    {% if current_user.is_admin() %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn bg-green-500 hover:bg-green-600 mr-2">Admin Dashboard</a>
+                    {% endif %}
+                    <a href="{{ url_for('logout') }}" class="btn bg-red-500 hover:bg-red-600">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('auth') }}" class="btn">Login/Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8 p-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-4">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {# Only show the upload form if the user is authenticated #}
+        {% if current_user.is_authenticated %}
+            <div class="card mx-auto max-w-md">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">Upload ID Document</h2>
+                <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
+                    <div>
+                        <label for="id_image" class="block text-sm font-medium text-gray-700">Select Image:</label>
+                        <input type="file" id="id_image" name="id_image" accept="image/*" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
+                    </div>
+                    <button type="submit" class="btn bg-blue-600 hover:bg-blue-700 w-full py-2 flex items-center justify-center" id="submitButton">
+                        <span id="buttonText">Extract & Verify</span>
+                        <svg id="spinner" class="animate-spin h-5 w-5 text-white ml-2 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="card text-center p-8 mx-auto max-w-md">
+                <div class="flex flex-col items-center mb-4">
+                    <img
+                        src="/static/img/logo.png"
+                        alt="App Logo"
+                        class="w-24 h-24 rounded-full object-cover shadow-lg mb-4"
+                    />
+                    <h2 class="text-2xl font-bold text-gray-800">Welcome</h2>
+                </div>
+                <p class="text-gray-600 mb-6">Please log in or register to use the ID document extraction and verification feature.</p>
+                <a href="{{ url_for('auth') }}" class="btn bg-blue-600 hover:bg-blue-700">Login / Register</a>
+            </div>
+        {% endif %}
+
+
+        <div id="results" class="card hidden">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">Results</h2>
+            <div id="alertMessage" class="px-4 py-3 rounded-lg relative text-sm mb-4 hidden" role="alert"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-700">Extracted Details:</h3>
+                    <ul id="extractedDetailsList" class="list-disc list-inside space-y-2 text-gray-600">
+                        <!-- Extracted details will be populated here -->
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-gray-700">Verification Status:</h3>
+                    <p id="verificationStatus" class="text-lg font-bold text-gray-800 mb-2"></p>
+                    <ul id="verifiedDetailsList" class="list-disc list-inside space-y-2 text-gray-600">
+                        <!-- Verified details will be populated here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadForm = document.getElementById('uploadForm');
+            const resultsDiv = document.getElementById('results');
+            const extractedDetailsList = document.getElementById('extractedDetailsList');
+            const verifiedDetailsList = document.getElementById('verifiedDetailsList');
+            const verificationStatusElement = document.getElementById('verificationStatus');
+            const submitButton = document.getElementById('submitButton');
+            const buttonText = document.getElementById('buttonText');
+            const spinner = document.getElementById('spinner');
+            const alertMessageDiv = document.getElementById('alertMessage');
+
+            // Only add event listener if the upload form exists (i.e., user is authenticated)
+            if (uploadForm) {
+                uploadForm.addEventListener('submit', async function(event) {
+                    event.preventDefault();
+
+                    // Clear previous results and messages
+                    extractedDetailsList.innerHTML = '';
+                    verifiedDetailsList.innerHTML = '';
+                    verificationStatusElement.textContent = '';
+                    resultsDiv.classList.add('hidden');
+                    alertMessageDiv.classList.add('hidden');
+                    alertMessageDiv.className = 'px-4 py-3 rounded-lg relative text-sm mb-4 hidden'; // Reset classes
+
+                    // Show loading spinner
+                    buttonText.textContent = 'Processing...';
+                    spinner.classList.remove('hidden');
+                    submitButton.disabled = true;
+
+                    const formData = new FormData(uploadForm);
+
+                    try {
+                        const response = await fetch('/extract-id-details', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            resultsDiv.classList.remove('hidden');
+
+                            // Display Extracted Details
+                            const extracted = data.extracted_details;
+                            for (const key in extracted) {
+                                // Exclude 'Model Used' and 'Overall Confidence' from user display
+                                if (key === 'Model Used' || key === 'Overall Confidence') {
+                                    continue;
+                                }
+                                const li = document.createElement('li');
+                                li.textContent = `${key}: ${extracted[key]}`;
+                                extractedDetailsList.appendChild(li);
+                            }
+
+                            // Display Verification Status
+                            const verification = data.verification;
+                            let statusText = '';
+                            let statusColorClass = '';
+
+                            if (verification.status === 'successful') {
+                                statusText = 'Verification Passed';
+                                statusColorClass = 'text-green-600';
+                                // Display Verified Details only if successful
+                                const verified = verification.record_details;
+                                for (const key in verified) {
+                                    const li = document.createElement('li');
+                                    li.textContent = `${key}: ${verified[key]}`;
+                                    verifiedDetailsList.appendChild(li);
+                                }
+                            } else {
+                                statusText = 'Verification Failed';
+                                statusColorClass = 'text-red-600';
+                                // Display verification message if failed
+                                const li = document.createElement('li');
+                                li.textContent = verification.message;
+                                verifiedDetailsList.appendChild(li);
+                            }
+                            verificationStatusElement.textContent = statusText;
+                            verificationStatusElement.classList.add(statusColorClass);
+
+                            // Display client alert message if present
+                            if (data.client_alert_message) {
+                                alertMessageDiv.textContent = data.client_alert_message;
+                                if (data.verification.status === 'successful' && !data.client_alert_message.includes("Manual Review Recommended")) {
+                                    alertMessageDiv.classList.add('bg-green-100', 'border', 'border-green-400', 'text-green-700');
+                                } else {
+                                    alertMessageDiv.classList.add('bg-yellow-100', 'border', 'border-yellow-400', 'text-yellow-700');
+                                }
+                                alertMessageDiv.classList.remove('hidden');
+                            }
+
+
+                        } else {
+                            // Handle server-side errors (e.g., 400, 500)
+                            const errorMessage = data.error || 'An unknown error occurred during extraction.';
+                            alertMessageDiv.textContent = data.client_alert_message || errorMessage;
+                            alertMessageDiv.classList.add('bg-red-100', 'border', 'border-red-400', 'text-red-700');
+                            alertMessageDiv.classList.remove('hidden');
+                            resultsDiv.classList.remove('hidden'); // Show results div even for errors to display message
+                            extractedDetailsList.innerHTML = `<li>Error: ${errorMessage}</li>`;
+                            verificationStatusElement.textContent = 'Error';
+                            verificationStatusElement.classList.add('text-red-600');
+                        }
+                    } catch (error) {
+                        console.error('Network or parsing error:', error);
+                        alertMessageDiv.textContent = 'Network error or server unavailable. Please try again.';
+                        alertMessageDiv.classList.add('bg-red-100', 'border', 'border-red-400', 'text-red-700');
+                        alertMessageDiv.classList.remove('hidden');
+                        resultsDiv.classList.remove('hidden'); // Show results div even for errors
+                        extractedDetailsList.innerHTML = `<li>Error: Network or server issue.</li>`;
+                        verificationStatusElement.textContent = 'Error';
+                        verificationStatusElement.classList.add('text-red-600');
+                    } finally {
+                        // Hide loading spinner
+                        buttonText.textContent = 'Extract & Verify';
+                        spinner.classList.add('hidden');
+                        submitButton.disabled = false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
