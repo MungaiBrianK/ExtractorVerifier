@@ -1,7 +1,7 @@
 import os
 import io
 import base64
-from PIL import Image
+#from PIL import Image
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, Response
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from threading import Thread # Keep Thread for potential background tasks if any, but not for Ngrok
