@@ -14,32 +14,34 @@
         .container {
             max-width: 1200px; /* Wider for admin dashboard */
             margin: 0 auto;
-            padding: 20px;
+            padding: 1rem; /* Adjusted padding for mobile */
         }
         .card {
             background-color: #fff;
-            border-radius: 8px;
+            border-radius: 0.75rem; /* Increased roundedness */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 1.5rem; /* Adjusted padding for mobile */
+            margin-bottom: 1.25rem; /* Adjusted margin */
         }
         .btn {
             display: inline-block;
-            padding: 8px 16px;
-            border-radius: 5px;
+            padding: 0.625rem 1.25rem; /* py-2.5 px-5 */
+            border-radius: 0.375rem; /* rounded-md */
             text-decoration: none;
             color: #fff;
             background-color: #4f46e5;
             transition: background-color 0.3s ease;
+            font-size: 0.875rem; /* text-sm */
         }
         .btn:hover {
             background-color: #4338ca;
         }
         .flash-message {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 5px;
+            padding: 0.75rem; /* py-3 */
+            margin-bottom: 1rem; /* mb-4 */
+            border-radius: 0.375rem; /* rounded-md */
             font-weight: bold;
+            font-size: 0.875rem; /* text-sm */
         }
         .flash-message.error {
             background-color: #fef2f2;
@@ -57,16 +59,18 @@
             border: 1px solid #10b981;
         }
         .table-container {
-            overflow-x: auto; /* Enable horizontal scrolling for tables */
+            overflow-x: auto; /* Enable horizontal scrolling for tables on small screens */
+            -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 1.25rem; /* Adjusted margin */
+            font-size: 0.875rem; /* Smaller font for tables on mobile */
         }
         th, td {
             border: 1px solid #e2e8f0;
-            padding: 12px;
+            padding: 0.75rem; /* Adjusted padding */
             text-align: left;
             vertical-align: top;
         }
@@ -82,26 +86,27 @@
             background-color: #f0f4f8;
         }
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
+            display: none;
+            position: fixed;
+            z-index: 1000;
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
             justify-content: center;
             align-items: center;
+            padding: 1rem; /* Padding for modal on mobile */
         }
         .modal-content {
             background-color: #fefefe;
             margin: auto;
-            padding: 20px;
+            padding: 1.5rem; /* Adjusted padding for mobile */
             border: 1px solid #888;
-            width: 80%; /* Could be responsive */
+            width: 100%; /* Full width on small screens */
             max-width: 600px;
-            border-radius: 8px;
+            border-radius: 0.75rem;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             position: relative;
         }
@@ -117,21 +122,48 @@
             text-decoration: none;
             cursor: pointer;
         }
+
+        /* Responsive adjustments for larger screens */
+        @media (min-width: 640px) { /* Tailwind 'sm' breakpoint */
+            .container {
+                padding: 20px;
+            }
+            .card {
+                padding: 20px;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            .flash-message {
+                padding: 10px;
+            }
+            table {
+                font-size: 1rem;
+                margin-top: 20px;
+            }
+            th, td {
+                padding: 12px;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100">
     <nav class="bg-gradient-to-r from-blue-600 to-purple-700 p-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="/" class="text-white text-2xl font-bold">VeriFAB Admin</a>
-            <div>
-                <span class="text-white mr-4">Welcome, {{ current_user.username }}!</span>
-                <a href="{{ url_for('index') }}" class="btn bg-gray-500 hover:bg-gray-600 mr-2">User View</a>
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center">
+            <a href="/" class="text-white text-2xl font-bold mb-2 sm:mb-0">VeriFAB Admin</a>
+            <div class="flex flex-wrap justify-center sm:justify-end gap-2">
+                <span class="text-white text-sm sm:text-base mr-2 sm:mr-4">Welcome, {{ current_user.username }}!</span>
+                <a href="{{ url_for('index') }}" class="btn bg-gray-500 hover:bg-gray-600">User View</a>
                 <a href="{{ url_for('logout') }}" class="btn bg-red-500 hover:bg-red-600">Logout</a>
             </div>
         </div>
     </nav>
 
-    <div class="container mx-auto mt-8 p-4">
+    <div class="container mx-auto mt-8 p-4 md:p-8">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="mb-4">
@@ -144,10 +176,10 @@
 
         {# Combined Admin Dashboard Header and Table Selector in one card #}
         <div class="card mb-6">
-            <h1 class="text-3xl font-bold mb-4 text-gray-800">Admin Dashboard</h1>
-            <div class="flex items-center">
-                <label for="tableSelector" class="text-lg font-medium text-gray-700 mr-3">Select Table:</label>
-                <select id="tableSelector" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            <h1 class="text-2xl sm:text-3xl font-bold mb-4 text-gray-800">Admin Dashboard</h1>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center">
+                <label for="tableSelector" class="text-base sm:text-lg font-medium text-gray-700 mr-3 mb-2 sm:mb-0">Select Table:</label>
+                <select id="tableSelector" class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base">
                     <option value="userTableContainer">User Management</option>
                     <option value="idRecordsTableContainer">ID Records in Database</option>
                     <option value="verificationLogsTableContainer">Verification Logs</option>
@@ -157,9 +189,11 @@
 
         <!-- User Management Section -->
         <div id="userTableContainer" class="card mb-6">
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">User Management</h2>
-            <button id="openAddUserModal" class="btn bg-green-600 hover:bg-green-700 mb-4">Add New User</button>
-            <a href="{{ url_for('export_users') }}" class="btn bg-indigo-600 hover:bg-indigo-700 mb-4 ml-2">Export Users to CSV</a>
+            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-800">User Management</h2>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="openAddUserModal" class="btn bg-green-600 hover:bg-green-700">Add New User</button>
+                <a href="{{ url_for('export_users') }}" class="btn bg-indigo-600 hover:bg-indigo-700">Export Users to CSV</a>
+            </div>
 
             <div class="table-container">
                 <table class="min-w-full">
@@ -192,17 +226,19 @@
                                 At: {{ user.last_updated_at.strftime('%Y-%m-%d %H:%M:%S') if user.last_updated_at else 'N/A' }}
                             </td>
                             <td>
-                                <button class="btn bg-yellow-500 hover:bg-yellow-600 text-sm edit-user-btn"
-                                    data-id="{{ user._id }}"
-                                    data-username="{{ user.username }}"
-                                    data-email="{{ user.email }}"
-                                    data-role="{{ user.role }}"
-                                    data-is_active="{{ 'true' if user.is_active else 'false' }}">
-                                    Edit
-                                </button>
-                                <button class="btn bg-red-500 hover:bg-red-600 text-sm delete-user-btn" data-id="{{ user._id }}">
-                                    Delete
-                                </button>
+                                <div class="flex flex-col gap-2">
+                                    <button class="btn bg-yellow-500 hover:bg-yellow-600 text-sm edit-user-btn"
+                                        data-id="{{ user._id }}"
+                                        data-username="{{ user.username }}"
+                                        data-email="{{ user.email }}"
+                                        data-role="{{ user.role }}"
+                                        data-is_active="{{ 'true' if user.is_active else 'false' }}">
+                                        Edit
+                                    </button>
+                                    <button class="btn bg-red-500 hover:bg-red-600 text-sm delete-user-btn" data-id="{{ user._id }}">
+                                        Delete
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -213,52 +249,51 @@
 
         <!-- ID Records Section (if applicable) -->
         <div id="idRecordsTableContainer" class="card mb-6 hidden"> {# Initially hidden #}
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">ID Records in Database</h2>
-            <div class="table-container">
-                <table class="min-w-full">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>ID Number</th>
-                            <th>Serial Number</th>
-                            <th>Full Names</th>
-                            <th>Date of Birth</th>
-                            <th>Gender</th>
-                            <th>Nationality</th>
-                            <th>District of Birth</th>
-                            <th>Date of Issue</th>
-                            <th>Place of Issue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for record in id_records %}
-                        <tr>
-                            <td>{{ record._id }}</td>
-                            <td>{{ record.idNumber }}</td>
-                            <td>{{ record.serialNumber }}</td>
-                            <td>{{ record.fullNames }}</td>
-                            <td>{{ record.dateOfBirth }}</td>
-                            <td>{{ record.gender }}</td>
-                            <td>{{ record.nationality }}</td>
-                            <td>{{ record.distictOfBirth }}</td>
-                            <td>{{ record.dateOfIssue }}</td>
-                            <td>{{ record.placeOfIssue }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        {% if not id_records %}
-            <div id="idRecordsTableContainer" class="card mb-6 hidden"> {# Also hide if no records #}
+            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-800">ID Records in Database</h2>
+            {% if id_records %}
+                <div class="table-container">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>ID Number</th>
+                                <th>Serial Number</th>
+                                <th>Full Names</th>
+                                <th>Date of Birth</th>
+                                <th>Gender</th>
+                                <th>Nationality</th>
+                                <th>District of Birth</th>
+                                <th>Date of Issue</th>
+                                <th>Place of Issue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in id_records %}
+                            <tr>
+                                <td>{{ record._id }}</td>
+                                <td>{{ record.idNumber }}</td>
+                                <td>{{ record.serialNumber }}</td>
+                                <td>{{ record.fullNames }}</td>
+                                <td>{{ record.dateOfBirth }}</td>
+                                <td>{{ record.gender }}</td>
+                                <td>{{ record.nationality }}</td>
+                                <td>{{ record.distictOfBirth }}</td>
+                                <td>{{ record.dateOfIssue }}</td>
+                                <td>{{ record.placeOfIssue }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
                 <p class="text-gray-600">No ID records found in the database.</p>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
 
 
         <!-- Verification Logs Section -->
         <div id="verificationLogsTableContainer" class="card hidden"> {# Initially hidden #}
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">Verification Logs</h2>
+            <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-800">Verification Logs</h2>
             <a href="{{ url_for('export_verification_logs') }}" class="btn bg-indigo-600 hover:bg-indigo-700 mb-4">Export Logs to CSV</a>
             <div class="table-container">
                 <table class="min-w-full">
@@ -296,7 +331,7 @@
     <div id="userModal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h2 id="modalTitle" class="text-xl font-bold mb-4">Add New User</h2>
+            <h2 id="modalTitle" class="text-xl sm:text-2xl font-bold mb-4">Add New User</h2>
             <form id="userForm" class="space-y-4">
                 <input type="hidden" id="userId">
                 <div>
@@ -464,7 +499,16 @@
                 }
 
                 if (password !== confirmPassword) {
-                    alert("Passwords do not match.");
+                    // Replaced alert with a custom message box
+                    const messageBox = document.createElement('div');
+                    messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+                    messageBox.innerHTML = `
+                        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                            <p class="text-lg font-semibold mb-4">Passwords do not match.</p>
+                            <button class="btn bg-blue-600 hover:bg-blue-700" onclick="this.parentNode.parentNode.remove()">OK</button>
+                        </div>
+                    `;
+                    document.body.appendChild(messageBox);
                     return;
                 }
 
@@ -489,15 +533,41 @@
 
                     const data = await response.json();
                     if (response.ok) {
-                        alert(data.message);
-                        userModal.style.display = 'none';
-                        location.reload(); // Reload page to show updated list
+                        // Replaced alert with a custom message box
+                        const messageBox = document.createElement('div');
+                        messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+                        messageBox.innerHTML = `
+                            <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                                <p class="text-lg font-semibold mb-4">${data.message}</p>
+                                <button class="btn bg-blue-600 hover:bg-blue-700" onclick="this.parentNode.parentNode.remove(); location.reload();">OK</button>
+                            </div>
+                        `;
+                        document.body.appendChild(messageBox);
+                        // location.reload(); // Reload page to show updated list
                     } else {
-                        alert(data.message || 'Operation failed.');
+                        // Replaced alert with a custom message box
+                        const messageBox = document.createElement('div');
+                        messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+                        messageBox.innerHTML = `
+                            <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                                <p class="text-lg font-semibold mb-4">${data.message || 'Operation failed.'}</p>
+                                <button class="btn bg-red-600 hover:bg-red-700" onclick="this.parentNode.parentNode.remove()">OK</button>
+                            </div>
+                        `;
+                        document.body.appendChild(messageBox);
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
+                    // Replaced alert with a custom message box
+                    const messageBox = document.createElement('div');
+                    messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+                    messageBox.innerHTML = `
+                        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                            <p class="text-lg font-semibold mb-4">An error occurred. Please try again.</p>
+                            <button class="btn bg-red-600 hover:bg-red-700" onclick="this.parentNode.parentNode.remove()">OK</button>
+                        </div>
+                    `;
+                    document.body.appendChild(messageBox);
                 }
             });
 
@@ -523,23 +593,69 @@
             document.querySelectorAll('.delete-user-btn').forEach(button => {
                 button.addEventListener('click', async function() {
                     const userId = this.dataset.id;
-                    if (confirm('Are you sure you want to delete this user?')) {
+                    // Replaced confirm with a custom message box
+                    const confirmBox = document.createElement('div');
+                    confirmBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+                    confirmBox.innerHTML = `
+                        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                            <p class="text-lg font-semibold mb-4">Are you sure you want to delete this user?</p>
+                            <div class="flex justify-center gap-4">
+                                <button id="confirmDeleteYes" class="btn bg-red-600 hover:bg-red-700">Yes</button>
+                                <button id="confirmDeleteNo" class="btn bg-gray-400 hover:bg-gray-500">No</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(confirmBox);
+
+                    document.getElementById('confirmDeleteYes').onclick = async () => {
+                        confirmBox.remove(); // Close confirm box
                         try {
                             const response = await fetch(`/admin/users/${userId}`, {
                                 method: 'DELETE'
                             });
                             const data = await response.json();
                             if (response.ok) {
-                                alert(data.message);
-                                location.reload(); // Reload page to show updated list
+                                // Replaced alert with a custom message box
+                                const messageBox = document.createElement('div');
+                                messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+                                messageBox.innerHTML = `
+                                    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                                        <p class="text-lg font-semibold mb-4">${data.message}</p>
+                                        <button class="btn bg-blue-600 hover:bg-blue-700" onclick="this.parentNode.parentNode.remove(); location.reload();">OK</button>
+                                    </div>
+                                `;
+                                document.body.appendChild(messageBox);
+                                // location.reload(); // Reload page to show updated list
                             } else {
-                                alert(data.message || 'Failed to delete user.');
+                                // Replaced alert with a custom message box
+                                const messageBox = document.createElement('div');
+                                messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+                                messageBox.innerHTML = `
+                                    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                                        <p class="text-lg font-semibold mb-4">${data.message || 'Failed to delete user.'}</p>
+                                        <button class="btn bg-red-600 hover:bg-red-700" onclick="this.parentNode.parentNode.remove()">OK</button>
+                                    </div>
+                                `;
+                                document.body.appendChild(messageBox);
                             }
                         } catch (error) {
                             console.error('Error:', error);
-                            alert('An error occurred. Please try again.');
+                            // Replaced alert with a custom message box
+                            const messageBox = document.createElement('div');
+                            messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+                            messageBox.innerHTML = `
+                                <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                                    <p class="text-lg font-semibold mb-4">An error occurred. Please try again.</p>
+                                    <button class="btn bg-red-600 hover:bg-red-700" onclick="this.parentNode.parentNode.remove()">OK</button>
+                                </div>
+                            `;
+                            document.body.appendChild(messageBox);
                         }
-                    }
+                    };
+
+                    document.getElementById('confirmDeleteNo').onclick = () => {
+                        confirmBox.remove(); // Close confirm box
+                    };
                 });
             });
         });

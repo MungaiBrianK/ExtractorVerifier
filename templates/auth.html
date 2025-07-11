@@ -15,6 +15,16 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            justify-content: center; /* Center content vertically */
+            align-items: center; /* Center content horizontally */
+            padding: 1rem; /* Add padding for mobile */
+        }
+
+        /* Responsive adjustments for the main container */
+        @media (min-width: 640px) { /* Tailwind 'sm' breakpoint */
+            #root {
+                padding: 2rem; /* More padding on larger screens */
+            }
         }
     </style>
     <!-- Babel for in-browser JSX transformation -->
@@ -161,12 +171,12 @@
                   <img
                     src="/static/img/logo.png"
                     alt="App Logo"
-                    className="w-24 h-24 rounded-full object-cover shadow-lg mb-4"
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover shadow-lg mb-4"
                   />
-                  <h1 className="text-3xl font-extrabold text-gray-800">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-800 text-center">
                     {isLogin ? 'Welcome Back!' : 'Join Us Today!'}
                   </h1>
-                  <p className="text-gray-600 mt-2 text-center text-sm">
+                  <p className="text-gray-600 mt-2 text-center text-sm sm:text-base">
                     {isLogin ? 'Login to your account' : 'Create your new account'}
                   </p>
                 </div>
@@ -219,11 +229,11 @@
                     {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
                     <button onClick={() => {
                         setIsLogin(!isLogin);
-                        setUsername('');
+                        setUsername(''); // Clear fields on toggle
                         setEmail('');
                         setPassword('');
                         setConfirmPassword('');
-                        setMessage('');
+                        setMessage(''); // Clear messages on toggle
                         setMessageType('');
                       }} className="font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200 ease-in-out focus:outline-none">
                       {isLogin ? 'Register here' : 'Login here'}
