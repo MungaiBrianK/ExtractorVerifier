@@ -1,23 +1,18 @@
 import os
 import io
 import base64
-#from PIL import Image
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, Response
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-from threading import Thread # Keep Thread for potential background tasks if any, but not for Ngrok
-import time # Keep time for potential delays, but not for Ngrok
-# from pyngrok import ngrok, conf # REMOVED: No longer needed for Render deployment
+from threading import Thread # for potential background tasks if any
+import time # for potential delays
 from datetime import datetime
 import csv # For CSV export
 from io import StringIO # For CSV export
 
-
-# Import your custom modules
-# REMOVED: dotenv.load_dotenv() as Render injects env vars directly
-from config import AZURE_DI_ENDPOINT, AZURE_DI_API_KEY, CUSTOM_MODEL_ID, FLASK_PORT, SECRET_KEY # NGROK_AUTH_TOKEN removed
-# Correctly import AzureDocumentIntelligenceService
+# Importing custom modules
+from config import AZURE_DI_ENDPOINT, AZURE_DI_API_KEY, CUSTOM_MODEL_ID, FLASK_PORT, SECRET_KEY 
 from azure_di_service import AzureDocumentIntelligenceService
-from mongo_service import mongo_service # mongo_service is already instantiated globally
+from mongo_service import mongo_service
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
@@ -26,7 +21,7 @@ app.config['SECRET_KEY'] = SECRET_KEY
 # --- Flask-Login Setup ---
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'auth' # Redirect to the new /auth route for login
+login_manager.login_view = 'auth' # Redirecting to the /auth route for login
 
 class User(UserMixin):
     def __init__(self, user_data):
@@ -53,7 +48,7 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    # This import needs to be here to avoid circular dependencies with mongo_service
+    # importing mongo_service to avoid circular dependencies with mongo_service
     from mongo_service import mongo_service
     user_data = mongo_service.get_user_by_id(user_id)
     if user_data:
@@ -89,7 +84,7 @@ def auth():
 def register():
     """API endpoint for user registration from React frontend."""
     if current_user.is_authenticated:
-        return jsonify({'message': 'You are already logged in.'}), 200 # Or 400/403
+        return jsonify({'message': 'You are already logged in.'}), 200 
 
     data = request.get_json()
     username = data.get('username')
@@ -103,11 +98,6 @@ def register():
     user_id, error_message = mongo_service.create_user(username, email, password, role_to_assign)
     
     if user_id:
-        # Optionally, log the user in immediately after registration
-        # user_data = mongo_service.get_user_by_id(user_id)
-        # if user_data:
-        #     user = User(user_data)
-        #     login_user(user)
         return jsonify({'message': 'Registration successful! You can now log in.'}), 201
     else:
         return jsonify({'message': error_message or 'Registration failed. An unknown error occurred.'}), 400
@@ -138,7 +128,7 @@ def login():
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('auth')) # Redirect to the new /auth route after logout
+    return redirect(url_for('auth')) # Redirect to the /auth route after logout
 
 @app.route('/extract-id-details', methods=['POST'])
 @login_required
@@ -160,8 +150,8 @@ def extract_id_details():
     verified_record_details = {}
     log_status = "error"
     log_error_message = None
-    manual_review_recommended = False # Initialize the flag
-    client_alert_message = None # Initialize client alert message
+    manual_review_recommended = False # Initializing the flag
+    client_alert_message = None # Initializing client alert message
 
     try:
         image_bytes = file.read()
@@ -182,9 +172,7 @@ def extract_id_details():
             print(f"DEBUG: Extracted ID Number (raw from DI): '{extracted_id_number}'")
             print(f"DEBUG: Extracted Serial Number (raw from DI): '{extracted_serial_number}'")
             
-            # These values will be normalized by mongo_service.get_id_record_by_numbers internally
-            # So we don't need to normalize them here for the lookup itself, just for logging if needed.
-
+            # mongo_service.get_id_record_by_numbers will normalize these values internally
             if extracted_id_number and extracted_serial_number:
                 print(f"DEBUG: Calling mongo_service.get_id_record_by_numbers with ID: '{extracted_id_number}', Serial: '{extracted_serial_number}'")
                 verified_record = mongo_service.get_id_record_by_numbers(
@@ -194,7 +182,7 @@ def extract_id_details():
                 if verified_record:
                     verification_status = "successful"
                     verification_message = "Verification successful: Matching record found!"
-                    # Ensure these are directly from the verified_record, which is now serialized
+                    # directly from the verified_record, which is now serialized
                     verified_record_details = {
                         "Date of Birth": verified_record.get("dateOfBirth", "N/A"),
                         "Gender": verified_record.get("gender", "N/A"),
@@ -222,7 +210,7 @@ def extract_id_details():
             log_error_message = "No details extracted from the document."
             print("INFO: No details extracted from document.")
 
-        # Check overall confidence for manual review recommendation (using the value from confidence_scores)
+        # Checking overall confidence for manual review recommendation (using the value from confidence_scores)
         overall_confidence_str = confidence_scores.get('Overall Confidence', '0%')
         try:
             overall_confidence_value = float(overall_confidence_str.replace('%', ''))
@@ -233,7 +221,7 @@ def extract_id_details():
             manual_review_recommended = True # Assume manual review if confidence is unparseable
 
 
-        # Construct client_alert_message for the frontend
+        # client_alert_message for the frontend
         if verification_status == "failed":
             client_alert_message = verification_message
             if manual_review_recommended:
@@ -246,35 +234,35 @@ def extract_id_details():
 
         return_data = {
             'message': 'Extraction and Verification process complete.',
-            'extracted_details': extracted_data, # This no longer includes 'Overall Confidence'
-            'confidence': confidence_scores, # Still include original confidence for raw logging if needed
+            'extracted_details': extracted_data, 
+            'confidence': confidence_scores, 
             'verification': {
                 'status': verification_status,
                 'message': verification_message,
                 'record_details': verified_record_details
             },
-            'client_alert_message': client_alert_message # Include alert message
+            'client_alert_message': client_alert_message 
         }
-        # Pass the new flag to the logging function
+        # Passing the new flag to the logging function
         mongo_service.log_verification_job(
             user_id=current_user.id,
             username=current_user.username,
             id_number=extracted_data.get('ID Number', 'N/A'),
             status=log_status,
             timestamp=datetime.now(),
-            extracted_data=extracted_data, # This now EXCLUDES 'Overall Confidence'
+            extracted_data=extracted_data, 
             verified_data=verified_record_details if verification_status == "successful" else None,
             error_message=log_error_message,
             manual_review_recommended=manual_review_recommended,
-            confidence=confidence_scores # This is where the full confidence dictionary, including Overall Confidence, is passed
+            confidence=confidence_scores
         )
         return jsonify(return_data), 200
 
     except Exception as e:
         print(f"Extraction and Verification error: {e}")
         log_error_message = f'An error occurred during extraction and verification: {str(e)}'
-        client_alert_message = f"An error occurred during extraction and verification: {str(e)}" # Alert on error
-        # Attempt to get ID number for logging even if extraction failed early
+        client_alert_message = f"An error occurred during extraction and verification: {str(e)}" # error alert
+        # getting ID number for logging even if extraction failed early
         attempted_id_number = extracted_data.get('ID Number', 'N/A')
         mongo_service.log_verification_job(
             user_id=current_user.id,
@@ -282,13 +270,13 @@ def extract_id_details():
             id_number=attempted_id_number,
             status="error",
             timestamp=datetime.now(),
-            extracted_data=extracted_data, # Will contain whatever was extracted before error
+            extracted_data=extracted_data, 
             verified_data=None,
             error_message=log_error_message,
-            manual_review_recommended=True, # If an error occurs, always recommend manual review
-            confidence=confidence_scores # Still pass confidence_scores, might be empty
+            manual_review_recommended=True, 
+            confidence=confidence_scores 
         )
-        return jsonify({'error': log_error_message, 'client_alert_message': client_alert_message}), 500 # Include alert message in error response
+        return jsonify({'error': log_error_message, 'client_alert_message': client_alert_message}), 500 # alert message in error response
 
 @app.route('/admin-dashboard')
 @login_required
@@ -314,7 +302,7 @@ def admin_dashboard():
     all_id_records = []
     if mongo_service.id_records_collection is not None:
         all_id_records = list(mongo_service.id_records_collection.find({}))
-        # Ensure ID records are serialized for the template if they contain ObjectIds/datetimes
+        # ensuringh ID records are serialized for the template if they contain ObjectIds/datetimes
         all_id_records = [mongo_service._serialize_mongo_doc(record) for record in all_id_records]
     else:
         print("WARNING: ID Records collection not initialized. Cannot fetch records.")
@@ -322,9 +310,10 @@ def admin_dashboard():
     all_verification_logs = []
     if mongo_service.verification_logs_collection is not None:
         all_verification_logs_raw = list(mongo_service.verification_logs_collection.find({}).sort("timestamp", -1))
-        
-        # Explicitly serialize nested data within each log entry (extracted_data, verified_data)
-        # but keep the top-level 'timestamp' as datetime for strftime in template.
+        '''
+        serializing nested data within each log entry (extracted_data, verified_data)
+        but keeping the top-level 'timestamp' as datetime for strftime in template.
+        '''
         for log in all_verification_logs_raw:
             if 'extracted_data' in log and log['extracted_data'] is not None:
                 log['extracted_data'] = mongo_service._serialize_mongo_doc(log['extracted_data'])
@@ -332,7 +321,7 @@ def admin_dashboard():
                 log['verified_data'] = mongo_service._serialize_mongo_doc(log['verified_data'])
             if 'confidence' in log and log['confidence'] is not None:
                 log['confidence'] = mongo_service._serialize_mongo_doc(log['confidence'])
-            # Ensure _id is stringified for all logs
+            # Ensuring _id is stringified for all logs
             if '_id' in log:
                 log['_id'] = str(log['_id'])
 
@@ -438,20 +427,22 @@ def export_verification_logs():
     cw.writerow(headers)
 
     logs = mongo_service.verification_logs_collection.find({}).sort("timestamp", -1)
-    # Ensure logs are serialized for CSV export as well
-    # The _serialize_mongo_doc will handle datetime to ISO string conversion.
+    '''
+    Ensuring logs are serialized for CSV export as well
+    _serialize_mongo_doc handles datetime to ISO string conversion.
+    '''
     serialized_logs_for_csv = [mongo_service._serialize_mongo_doc(log) for log in logs]
 
-    for log in serialized_logs_for_csv: # Iterate over serialized logs
+    for log in serialized_logs_for_csv: # Iterating over serialized logs
         row = [
             str(log.get('_id')),
             str(log.get('user_id')),
             log.get('username', 'N/A'),
-            log.get('timestamp', 'N/A'), # This will now be an ISO formatted string due to _serialize_mongo_doc
+            log.get('timestamp', 'N/A'), #ISO formatted string due to _serialize_mongo_doc
             log.get('id_number_attempted', 'N/A'),
             log.get('status', 'N/A').capitalize(),
             'Yes' if log.get('manual_review_recommended', False) else 'No',
-            log.get('confidence', {}).get('Overall Confidence', 'N/A') # Get Overall Confidence from confidence field
+            log.get('confidence', {}).get('Overall Confidence', 'N/A') 
         ]
         cw.writerow(row)
 
