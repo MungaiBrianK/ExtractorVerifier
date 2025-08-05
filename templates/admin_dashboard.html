@@ -14,14 +14,14 @@
         .container {
             max-width: 1200px; /* Wider for admin dashboard */
             margin: 0 auto;
-            padding: 1rem; /* Adjusted padding for mobile */
+            padding: 1rem; /*padding for mobile */
         }
         .card {
             background-color: #fff;
             border-radius: 0.75rem; /* Increased roundedness */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem; /* Adjusted padding for mobile */
-            margin-bottom: 1.25rem; /* Adjusted margin */
+            padding: 1.5rem; /*padding for mobile */
+            margin-bottom: 1.25rem; /*tweaked margin */
         }
         .btn {
             display: inline-block;
@@ -59,14 +59,14 @@
             border: 1px solid #10b981;
         }
         .table-container {
-            overflow-x: auto; /* Enable horizontal scrolling for tables on small screens */
-            -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
+            overflow-x: auto; /*horizontal scrolling for tables on small screens */
+            -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */e
         }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1.25rem; /* Adjusted margin */
-            font-size: 0.875rem; /* Smaller font for tables on mobile */
+            font-size: 0.875rem; /*Smaller font for tables on mobile */
         }
         th, td {
             border: 1px solid #e2e8f0;
@@ -97,12 +97,12 @@
             background-color: rgba(0,0,0,0.4);
             justify-content: center;
             align-items: center;
-            padding: 1rem; /* Padding for modal on mobile */
+            padding: 1rem; /*Padding for modal on mobile */
         }
         .modal-content {
             background-color: #fefefe;
             margin: auto;
-            padding: 1.5rem; /* Adjusted padding for mobile */
+            padding: 1.5rem; /*tweaked padding for mobile */
             border: 1px solid #888;
             width: 100%; /* Full width on small screens */
             max-width: 600px;
@@ -512,7 +512,7 @@
                     return;
                 }
 
-                const method = id ? 'PUT' : 'POST'; // Use PUT for update, POST for create
+                const method = id ? 'PUT' : 'POST'; // PUT for update, POST for create
                 const url = '/admin/users' + (id ? `/${id}` : '');
 
                 try {
@@ -533,7 +533,7 @@
 
                     const data = await response.json();
                     if (response.ok) {
-                        // Replaced alert with a custom message box
+                        // custom message box for alerting
                         const messageBox = document.createElement('div');
                         messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
                         messageBox.innerHTML = `
@@ -558,7 +558,7 @@
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    // Replaced alert with a custom message box
+                    // a custom message box for alerting
                     const messageBox = document.createElement('div');
                     messageBox.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
                     messageBox.innerHTML = `
