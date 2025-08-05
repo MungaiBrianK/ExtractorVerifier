@@ -3,7 +3,7 @@ from pymongo.errors import ConnectionFailure, OperationFailure
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
 from datetime import datetime
-import re # Import regex module for ID number normalization
+import re # regex module for ID number normalization
 
 from config import MONGO_URI, MONGO_DB_NAME, MONGO_USERS_COLLECTION_NAME, \
                    MONGO_ID_RECORDS_COLLECTION_NAME, MONGO_VERIFICATION_LOGS_COLLECTION_NAME
@@ -21,21 +21,21 @@ class MongoService:
         """Establishes connection to MongoDB."""
         try:
             self.client = MongoClient(MONGO_URI)
-            self.client.admin.command('ping') # Test connection
+            self.client.admin.command('ping') # Testin connection
             self.db = self.client[MONGO_DB_NAME]
             self.users_collection = self.db[MONGO_USERS_COLLECTION_NAME]
             self.id_records_collection = self.db[MONGO_ID_RECORDS_COLLECTION_NAME]
             self.verification_logs_collection = self.db[MONGO_VERIFICATION_LOGS_COLLECTION_NAME]
             print("INFO: MongoDB connection successful.")
 
-            # Ensure unique index for username
+            # Ensuring unique index for username
             try:
                 self.users_collection.create_index("username", unique=True)
                 print("INFO: Unique index on 'username' ensured for users collection.")
             except Exception as e:
                 print(f"WARNING: Could not create unique index on 'username': {e}")
 
-            # Ensure unique index for idNumber and serialNumber combined
+            # Ensuring unique index for idNumber and serialNumber combined
             try:
                 self.id_records_collection.create_index([("idNumber", 1), ("serialNumber", 1)], unique=True)
                 print("INFO: Compound unique index on 'idNumber' and 'serialNumber' ensured for id_records collection.")
@@ -45,7 +45,7 @@ class MongoService:
 
         except ConnectionFailure as e:
             print(f"ERROR: MongoDB connection failed: {e}")
-            self.client = None # Ensure client is None if connection fails
+            self.client = None # Ensurin client is None if connection fails
         except Exception as e:
             print(f"ERROR: An unexpected error occurred during MongoDB connection: {e}")
             self.client = None
@@ -53,7 +53,7 @@ class MongoService:
     def _normalize_id_number(self, id_number):
         """Normalizes ID numbers by removing non-alphanumeric characters and converting to uppercase."""
         if id_number:
-            return re.sub(r'[^a-zA-Z0-9]', '', str(id_number)).upper() # Ensure input is string for re.sub
+            return re.sub(r'[^a-zA-Z0-9]', '', str(id_number)).upper() # Ensuring input is string for re.sub
         return ""
 
     def _serialize_mongo_doc(self, doc):
@@ -209,7 +209,7 @@ class MongoService:
         """Adds a new ID record to the database."""
         if self.id_records_collection is None: return None
         try:
-            # Normalize ID and Serial Numbers before saving - ensure they are stored as strings
+            # Normalizing ID and Serial Numbers before saving (stored as strings)
             if 'idNumber' in id_data:
                 id_data['idNumber'] = self._normalize_id_number(id_data['idNumber'])
             if 'serialNumber' in id_data:
@@ -274,11 +274,11 @@ class MongoService:
             "id_number_attempted": id_number,
             "status": status,
             "timestamp": timestamp,
-            "extracted_data": self._serialize_mongo_doc(extracted_data), # This now includes 'Overall Confidence'
+            "extracted_data": self._serialize_mongo_doc(extracted_data), 
             "verified_data": self._serialize_mongo_doc(verified_data) if verified_data else None,
             "error_message": error_message,
             "manual_review_recommended": manual_review_recommended,
-            "confidence": self._serialize_mongo_doc(confidence) if confidence else {} # Still store raw confidence for completeness
+            "confidence": self._serialize_mongo_doc(confidence) if confidence else {}
         }
         try:
             self.verification_logs_collection.insert_one(log_entry)
