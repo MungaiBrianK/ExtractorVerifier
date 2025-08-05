@@ -1,11 +1,11 @@
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
-from config import AZURE_DI_ENDPOINT, AZURE_DI_API_KEY # Import configuration
+from config import AZURE_DI_ENDPOINT, AZURE_DI_API_KEY
 
 class AzureDocumentIntelligenceService:
     def __init__(self, endpoint, api_key, custom_model_id=None):
         """
-        Initializes the Azure Document Intelligence client.
+        Initializing the Azure Document Intelligence client.
         """
         if not endpoint or not api_key:
             raise ValueError("Azure Document Intelligence endpoint and API key must be provided.")
@@ -48,7 +48,7 @@ class AzureDocumentIntelligenceService:
                     print(f"   Found {len(fields_from_api)} fields from API response.")
 
                     for field_key, display_name in field_mappings.items():
-                        field_value = "N/A" # Default to N/A if not found or empty
+                        field_value = "N/A" # Defaulting to N/A if not found or empty
                         if field_key in fields_from_api:
                             field_obj = fields_from_api[field_key]
                             temp_value = None
@@ -105,8 +105,8 @@ class AzureDocumentIntelligenceService:
 
     def analyze_document_with_custom_model(self, document_bytes):
         """
-        Analyzes a document using the specified custom model.
-        Returns the raw analysis result object.
+        Analyzing user-provided ID document using the specified custom model.
+        Return the raw analysis result object.
         """
         if not self.custom_model_id:
             raise ValueError("Custom model ID is not set for AzureDocumentIntelligenceService.")
@@ -120,8 +120,8 @@ class AzureDocumentIntelligenceService:
 
     def analyze_id_document(self, document_bytes):
         """
-        Analyzes an ID document using the prebuilt 'prebuilt-idDocument' model.
-        Returns the raw analysis result object.
+        Analyzing an ID document using the prebuilt 'prebuilt-idDocument' model.
+        Return the raw analysis result object.
         """
         if not self.document_analysis_client:
             raise RuntimeError("Azure Document Intelligence client is not initialized.")
